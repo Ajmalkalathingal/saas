@@ -1,0 +1,5 @@
+components:
+  navbar:
+    template: nav/navbar.html
+  footer:
+    template: base/footer.html
