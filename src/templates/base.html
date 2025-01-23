@@ -10,7 +10,7 @@
     {% include 'nav/navbar.html' %}
     {% include 'base/messages.html' with messages=messages %}
 
-    <p>hello</p>
+    <p>{{request.user.username}}</p>
 
     {% block content %}
     
