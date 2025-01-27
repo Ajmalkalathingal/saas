@@ -1,4 +1,5 @@
 from django.db import models
+import helper.billing
 from django.db.models import Q
 from django.contrib.auth.models import Group, Permission
 from django.db.models.signals import post_save
@@ -30,10 +31,30 @@ class Subscription(models.Model):
         "content_type__app_label": "subscriptions", "codename__in": [x[0]for x in SUBSCRIPTION_PERMISSIONS]
         }
     )
+    stripe_id = models.CharField(max_length=120, null=True, blank=True)
+
     def __str__(self):
         return f'{self.name}'
+    
     class Meta:
         permissions = SUBSCRIPTION_PERMISSIONS
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            super().save(*args, **kwargs)
+
+        if not self.stripe_id:
+            stripe_id = helper.billing.create_Product(
+                name=self.name,
+                metadata={
+                    "subscription__id": self.id,
+                },
+            )
+            self.stripe_id = stripe_id.id
+        
+        # Save again to update the stripe_id
+        super().save(*args, **kwargs)
+ 
 
 
 class UserSubscription(models.Model):

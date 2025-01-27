@@ -11,11 +11,19 @@ if 'sk_test' not in STRIPE_SECRET_KEY and not DEBUG:
 
 stripe.api_key = STRIPE_SECRET_KEY
 
-def create_customer(name, email,meta={}):
+def create_customer(email,metadata={}):
     res = stripe.Customer.create(
-  name=name,
   email=email,
-  metadata=meta
+  metadata=metadata
+)
+    if res:
+        return res
+    
+
+def create_Product(name,metadata={}):
+    res = stripe.Product.create(
+        name=name,
+        metadata=metadata
 )
     if res:
         return res
