@@ -17,11 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from visits.views import home,user_only_view,staff_only_view
-
+from subscriptions.views import subscription_price_view
 
 urlpatterns = [
     path('admin/', admin.site.urls), 
     path('', home,name='home'),
+    path('pricing/', subscription_price_view,name='pricing'),
     path('protected-user/', user_only_view,name='user-only'),
     path('protected-staff/', staff_only_view,name='protected-staff'),
     path('accounts/', include('allauth.urls')),
