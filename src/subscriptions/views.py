@@ -1,14 +1,33 @@
 from django.shortcuts import render
+from django.urls import reverse
 from .models import SubscriptionPrice
 
 # Create your views here.
 
-def subscription_price_view(request):
+def subscription_price_view(request,interval = 'month'):
     qs = SubscriptionPrice.objects.filter(featured=True)
-    mothly_qs = qs.filter(interval=SubscriptionPrice.IntervalChoices.MONTHLY)
-    yearly_qs = qs.filter(interval=SubscriptionPrice.IntervalChoices.YEARLY)
 
+    inv_mo = SubscriptionPrice.IntervalChoices.MONTHLY
+    inv_yr = SubscriptionPrice.IntervalChoices.YEARLY
+
+    url_path = 'pricing-intervel'
+    mo_url = reverse(url_path ,kwargs={'interval' : inv_mo})
+    yr_url = reverse(url_path ,kwargs={'interval' : inv_yr})
+
+    print(inv_mo)
+    print(inv_yr)
+    obj_lis = qs.filter(interval=inv_mo)
+    
+    active = inv_mo
+
+    if interval == inv_yr:
+        obj_lis = qs.filter(interval=inv_yr)
+        active = inv_yr
+        
     return render(request,'subscriptions/pricing.html',{
-        'monthly':mothly_qs,
-        'yearly':yearly_qs  
+        'obj_lis':obj_lis,
+        'mo_url':mo_url,
+        'yr_url' : yr_url,
+        'active' : active,
     })
+

@@ -27,6 +27,7 @@ class Subscription(models.Model):
     Subscription Plan = Stripe Product
     """
     name = models.CharField(max_length=120)
+    subtitle = models.TextField(blank=True, null=True)
     active = models.BooleanField(default=True)
     groups = models.ManyToManyField(Group) # one-to-one
     permissions =  models.ManyToManyField(Permission, limit_choices_to={

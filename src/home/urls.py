@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls), 
     path('', home,name='home'),
     path('pricing/', subscription_price_view,name='pricing'),
+    path('pricing/<str:interval>/', subscription_price_view,name='pricing-intervel'),
     path('protected-user/', user_only_view,name='user-only'),
     path('protected-staff/', staff_only_view,name='protected-staff'),
     path('accounts/', include('allauth.urls')),
