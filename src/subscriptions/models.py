@@ -41,8 +41,6 @@ class Subscription(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     feature = models.TextField(blank=True, null=True)
 
-    
-    
 
     def __str__(self):
         return f'{self.name}'
@@ -96,6 +94,8 @@ class SubscriptionPrice(models.Model):
     class Meta:
         ordering = ['subscription__order', 'order', 'featured', '-updated']
    
+    def get_checkout_url(self):
+        return reverse('sub-price-checkout', kwargs={'price_id' : self.id})
 
     @property
     def display_sub_name(self):

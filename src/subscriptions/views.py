@@ -14,8 +14,6 @@ def subscription_price_view(request,interval = 'month'):
     mo_url = reverse(url_path ,kwargs={'interval' : inv_mo})
     yr_url = reverse(url_path ,kwargs={'interval' : inv_yr})
 
-    print(inv_mo)
-    print(inv_yr)
     obj_lis = qs.filter(interval=inv_mo)
     
     active = inv_mo

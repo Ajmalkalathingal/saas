@@ -44,3 +44,39 @@ def create_price(currency="usd",
         )
     if res:
         return res
+    
+
+def start_checkout_session(customer_id='',success_url='',cancel_url='',price_stripe_id=''):
+    if not success_url.endswith("?session_id={CHECKOUT_SESSION_ID}"):
+        success_url = f"{success_url}" + "?session_id={CHECKOUT_SESSION_ID}"
+    response = stripe.checkout.Session.create(
+        customer=customer_id,
+        success_url=success_url,
+        cancel_url=cancel_url,
+        line_items=[{"price": price_stripe_id, "quantity": 1}],
+        mode="subscription",
+        )  
+    if response:
+        return response    
+
+
+def get_checkout_session(strip_id):
+    response = stripe.checkout.Session.retrieve(
+        strip_id
+        )
+    return response
+
+def get_subscription(strip_id):
+    response = stripe.Subscription.retrieve(
+        strip_id
+    )
+    return response
+
+def get_checkout_customer_plan(session_id):
+    checkout_redirect = get_checkout_session(session_id)
+
+    customer_id = checkout_redirect.customer
+    subscription_strip_id = checkout_redirect.subscription
+
+    subscription = get_subscription(subscription_strip_id)
+    return customer_id, subscription.plan.id    
