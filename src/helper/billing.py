@@ -72,6 +72,27 @@ def get_subscription(strip_id):
     )
     return response
 
+def cencel_subscription(stripe_id,reason='', feedback='other'):
+    response = stripe.Subscription.cancel(
+        stripe_id,
+        cancellation_details={
+            "comment": reason,
+            "feedback": feedback
+        })
+
+    return response
+
+# def get_checkout_customer_plan(session_id):
+#     checkout_redirect = get_checkout_session(session_id)
+
+#     customer_id = checkout_redirect.customer
+#     subscription_strip_id = checkout_redirect.subscription
+
+#     subscription = get_subscription(subscription_strip_id)
+#     return customer_id, subscription.plan.id, subscription_strip_id   
+
+
+
 def get_checkout_customer_plan(session_id):
     checkout_redirect = get_checkout_session(session_id)
 
@@ -79,4 +100,13 @@ def get_checkout_customer_plan(session_id):
     subscription_strip_id = checkout_redirect.subscription
 
     subscription = get_subscription(subscription_strip_id)
-    return customer_id, subscription.plan.id    
+    subscription_plan_id = subscription.plan.id
+    data = {
+        "customer_id" : customer_id,
+        "subscription_plan_id" : subscription_plan_id,
+        "subscription_strip_id" : subscription_strip_id,
+        "current_period_start" :  subscription.current_period_start,
+        "current_period_end" :  subscription.current_period_end,
+
+    }
+    return data 

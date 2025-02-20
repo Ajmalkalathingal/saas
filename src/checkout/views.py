@@ -49,12 +49,82 @@ def checkout_redirect_view(request):
     
     return redirect(response.url)
 
+# def checkout_finilized_view(request):
+#     session_id = request.GET.get('session_id')
+#     customer_id, subscription_price_id,subscription_strip_id = billing.get_checkout_customer_plan(session_id)
+
+#     print( customer_id, 'customer_id')
+#     print(subscription_price_id, 'subscription_price_id')
+#     print(subscription_strip_id, 'sub')
+
+#     try:
+#        sub_obj = Subscription.objects.get(subscriptionprice__stripe_id = subscription_price_id) 
+       
+#     except :
+#         sub_obj = None
+
+#     try:
+#        user_obj = USer.objects.get(customer__stripe_id = customer_id) 
+#     except :
+#         user_obj = None
+
+#     _user_sub_exist = False 
+
+#     update_sub_options = {
+#         'subscription': sub_obj,
+#         'stripe_id' : subscription_strip_id,
+#         'user_cancelled' : False
+#     }    
+
+#     try:
+#        _user_sub_obj = UserSubscription.objects.get(user = user_obj)
+#        _user_sub_exist = True
+#     except UserSubscription.DoesNotExist:
+#         _user_sub_obj = UserSubscription.objects.create(user = user_obj, **update_sub_options)
+#     except:
+#         _user_sub_obj = None    
+        
+#     if not [sub_obj,user_obj,_user_sub_obj]:
+#         return HttpResponseBadRequest('there was an error in your account. please contact us')
+
+#     if _user_sub_exist:
+
+#         # cencel old sub
+#         _old_sub_id = _user_sub_obj.stripe_id
+#         print(_old_sub_id,'old')
+#         if _old_sub_id is not None and _old_sub_id != subscription_strip_id:
+#             billing.cencel_subscription(_old_sub_id, reason='Auto ended new membership', feedback='other')
+
+#         # assign new sub
+#         for k,v in update_sub_options.items():
+#             setattr(_user_sub_obj, k, v)
+
+#         _user_sub_obj.save()    
+
+#     print(sub_obj,'aaa',user_obj,'gggg')
+#     context = {
+#         # 'checkout' : checkout_redirect,
+#     }
+
+#     return render(request, 'checkout/success.html',context)
+
+
+
 def checkout_finilized_view(request):
     session_id = request.GET.get('session_id')
-    customer_id, subscription_price_id = billing.get_checkout_customer_plan(session_id)
+    chack_out_data = billing.get_checkout_customer_plan(session_id)
 
-    print(subscription_price_id)
 
+    customer_id = chack_out_data.get('customer_id') 
+    subscription_price_id = chack_out_data.get('subscription_plan_id')
+    subscription_strip_id = chack_out_data.get('subscription_strip_id')
+    current_period_start = chack_out_data.get('subscription.current_period_start') 
+    current_period_end =  chack_out_data.get('subscription.current_period_endt') 
+
+  
+    print( customer_id, 'customer_id')
+    print(subscription_price_id, 'subscription_price_id')
+    print(subscription_strip_id, 'sub')
 
     try:
        sub_obj = Subscription.objects.get(subscriptionprice__stripe_id = subscription_price_id) 
@@ -67,13 +137,19 @@ def checkout_finilized_view(request):
     except :
         user_obj = None
 
-    _user_sub_exist = False     
+    _user_sub_exist = False 
+
+    update_sub_options = {
+        'subscription': sub_obj,
+        'stripe_id' : subscription_strip_id,
+        'user_cancelled' : False
+    }    
 
     try:
        _user_sub_obj = UserSubscription.objects.get(user = user_obj)
        _user_sub_exist = True
     except UserSubscription.DoesNotExist:
-        _user_sub_obj = UserSubscription.objects.create(user = user_obj, subscription=sub_obj)
+        _user_sub_obj = UserSubscription.objects.create(user = user_obj, **update_sub_options)
     except:
         _user_sub_obj = None    
         
@@ -81,13 +157,22 @@ def checkout_finilized_view(request):
         return HttpResponseBadRequest('there was an error in your account. please contact us')
 
     if _user_sub_exist:
-        _user_sub_obj.subscription = sub_obj
-        _user_sub_obj.save()
 
-    print(sub_obj,user_obj)
+        # cencel old sub
+        _old_sub_id = _user_sub_obj.stripe_id
+        print(_old_sub_id,'old')
+        if _old_sub_id is not None and _old_sub_id != subscription_strip_id:
+            billing.cencel_subscription(_old_sub_id, reason='Auto ended new membership', feedback='other')
+
+        # assign new sub
+        for k,v in update_sub_options.items():
+            setattr(_user_sub_obj, k, v)
+
+        _user_sub_obj.save()    
+
+    print(sub_obj,'aaa',user_obj,'gggg')
     context = {
         # 'checkout' : checkout_redirect,
-        # 'subscription' : subscription
     }
 
     return render(request, 'checkout/success.html',context)
