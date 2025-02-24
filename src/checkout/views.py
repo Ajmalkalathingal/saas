@@ -115,17 +115,12 @@ def checkout_finilized_view(request):
     chack_out_data = billing.get_checkout_customer_plan(session_id)
 
 
-    customer_id = chack_out_data.get('customer_id') 
-    subscription_price_id = chack_out_data.get('subscription_plan_id')
-    subscription_strip_id = chack_out_data.get('subscription_strip_id')
-    current_period_start = chack_out_data.get('subscription.current_period_start') 
-    current_period_end =  chack_out_data.get('subscription.current_period_endt') 
+    customer_id = chack_out_data.pop('customer_id') 
+    subscription_price_id = chack_out_data.pop('subscription_plan_id')
+    subscription_strip_id = chack_out_data.pop('subscription_strip_id')
+    subscrption_data = {** chack_out_data}
 
-  
-    print( customer_id, 'customer_id')
-    print(subscription_price_id, 'subscription_price_id')
-    print(subscription_strip_id, 'sub')
-
+    print(subscrption_data)
     try:
        sub_obj = Subscription.objects.get(subscriptionprice__stripe_id = subscription_price_id) 
        
@@ -142,7 +137,9 @@ def checkout_finilized_view(request):
     update_sub_options = {
         'subscription': sub_obj,
         'stripe_id' : subscription_strip_id,
-        'user_cancelled' : False
+        'user_cancelled' : False,
+        **subscrption_data
+
     }    
 
     try:
@@ -160,7 +157,6 @@ def checkout_finilized_view(request):
 
         # cencel old sub
         _old_sub_id = _user_sub_obj.stripe_id
-        print(_old_sub_id,'old')
         if _old_sub_id is not None and _old_sub_id != subscription_strip_id:
             billing.cencel_subscription(_old_sub_id, reason='Auto ended new membership', feedback='other')
 
@@ -170,7 +166,6 @@ def checkout_finilized_view(request):
 
         _user_sub_obj.save()    
 
-    print(sub_obj,'aaa',user_obj,'gggg')
     context = {
         # 'checkout' : checkout_redirect,
     }

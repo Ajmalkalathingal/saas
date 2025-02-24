@@ -2,6 +2,7 @@
 # See your keys here: https://dashboard.stripe.com/apikeys
 from decouple import config
 import stripe
+from . import date_utils
 
 DEBUG = config('DEBUG', cast=bool, default=False)
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', cast=str, default='')
@@ -100,13 +101,19 @@ def get_checkout_customer_plan(session_id):
     subscription_strip_id = checkout_redirect.subscription
 
     subscription = get_subscription(subscription_strip_id)
+
     subscription_plan_id = subscription.plan.id
+    status = subscription.status
+
+    current_period_start = date_utils.timestamp_as_time(subscription.current_period_start)
+    current_period_end = date_utils.timestamp_as_time(subscription.current_period_end)
     data = {
         "customer_id" : customer_id,
         "subscription_plan_id" : subscription_plan_id,
         "subscription_strip_id" : subscription_strip_id,
-        "current_period_start" :  subscription.current_period_start,
-        "current_period_end" :  subscription.current_period_end,
+        "current_period_start" :  current_period_start,
+        "current_period_end" : current_period_end,
+        "status" : status
 
     }
     return data 
