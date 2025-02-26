@@ -12,6 +12,19 @@ if 'sk_test' not in STRIPE_SECRET_KEY and not DEBUG:
 
 stripe.api_key = STRIPE_SECRET_KEY
 
+
+def serialize_subscription_data(subscription_response):
+    status = subscription_response.status
+    current_period_start = date_utils.timestamp_as_time(subscription_response.current_period_start)
+    current_period_end = date_utils.timestamp_as_time(subscription_response.current_period_end)
+    cancel_at_period_end = subscription_response.cancel_at_period_end
+    return {
+        "current_period_start": current_period_start,
+        "current_period_end": current_period_end,
+        "status": status,
+        "cancel_at_period_end": cancel_at_period_end,
+    }
+
 def create_customer(email,metadata={}):
     res = stripe.Customer.create(
   email=email,
@@ -67,11 +80,13 @@ def get_checkout_session(strip_id):
         )
     return response
 
-def get_subscription(strip_id):
+def get_subscription(strip_id, raw=True):
     response = stripe.Subscription.retrieve(
         strip_id
     )
-    return response
+    if raw:
+        return response
+    return serialize_subscription_data(response)
 
 def cencel_subscription(stripe_id,reason='', feedback='other'):
     response = stripe.Subscription.cancel(
@@ -81,17 +96,7 @@ def cencel_subscription(stripe_id,reason='', feedback='other'):
             "feedback": feedback
         })
 
-    return response
-
-# def get_checkout_customer_plan(session_id):
-#     checkout_redirect = get_checkout_session(session_id)
-
-#     customer_id = checkout_redirect.customer
-#     subscription_strip_id = checkout_redirect.subscription
-
-#     subscription = get_subscription(subscription_strip_id)
-#     return customer_id, subscription.plan.id, subscription_strip_id   
-
+    return response 
 
 
 def get_checkout_customer_plan(session_id):
@@ -100,7 +105,7 @@ def get_checkout_customer_plan(session_id):
     customer_id = checkout_redirect.customer
     subscription_strip_id = checkout_redirect.subscription
 
-    subscription = get_subscription(subscription_strip_id)
+    subscription = get_subscription(subscription_strip_id,raw=True)
 
     subscription_plan_id = subscription.plan.id
     status = subscription.status
@@ -117,3 +122,14 @@ def get_checkout_customer_plan(session_id):
 
     }
     return data 
+
+
+
+# def get_checkout_customer_plan(session_id):
+#     checkout_redirect = get_checkout_session(session_id)
+
+#     customer_id = checkout_redirect.customer
+#     subscription_strip_id = checkout_redirect.subscription
+
+#     subscription = get_subscription(subscription_strip_id)
+#     return customer_id, subscription.plan.id, subscription_strip_id  

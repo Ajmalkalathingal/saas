@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block head_title %} user details {% endblock head_title %}</title>
+    {% include 'base/css.html' %}
+</head>
+<body>
+    {% include 'nav/navbar.html' %}
+    {% include 'base/messages.html' with messages=messages %}
+
+    <!-- <p>{{request.user.username}}</p> -->
+
+    {% block content %}
+    <form action="" method="POST">{% csrf_token %}
+        <button type="submit">refresh</button>
+    </form>
+<div class="" style="margin: 10px;">
+    <p> plan : {{sub_data.plan_name }}</p>
+    <p> original_period_start : {{sub_data.original_period_start }}</p>
+    <p> current_period_start : {{sub_data.current_period_start   }}</p>
+    <p> current_period_end : {{sub_data.current_period_end }}</p>
+    <p> status : {{sub_data.status }}</p>
+</div>
+
+
+    {% endblock content %}
+
+    {% include 'base/js.html' %}
+</body>
+</html>
