@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from visits.views import home,user_only_view,staff_only_view
-from subscriptions.views import subscription_price_view,user_subscription_view
+from subscriptions.views import subscription_price_view,user_subscription_view,user_subscription_cancel_view
 from checkout.views import product_price_redirect_view,checkout_redirect_view,checkout_finilized_view
 
 urlpatterns = [
@@ -36,6 +36,7 @@ urlpatterns = [
 
     path('accounts/', include('allauth.urls')),
     path('accounts/billings/', user_subscription_view,name='user-subscription'),
+    path('accounts/billings/cancel', user_subscription_cancel_view,name='user-subscription-cancel'),
     path('profiles/', include('profiles.urls')),
 
 ]

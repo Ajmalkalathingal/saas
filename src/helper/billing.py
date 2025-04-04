@@ -21,8 +21,8 @@ def serialize_subscription_data(subscription_response):
     return {
         "current_period_start": current_period_start,
         "current_period_end": current_period_end,
-        "status": status,
         "cancel_at_period_end": cancel_at_period_end,
+        "status": status,
     }
 
 def create_customer(email,metadata={}):
@@ -88,15 +88,35 @@ def get_subscription(strip_id, raw=True):
         return response
     return serialize_subscription_data(response)
 
-def cencel_subscription(stripe_id,reason='', feedback='other'):
-    response = stripe.Subscription.cancel(
+
+def get_customer_active_subscription(customer_stripe_id):
+    response = stripe.Subscription.list(customer=customer_stripe_id,status='active')
+    if response:
+        return response
+
+
+def cencel_subscription(stripe_id, cancel_at_period_end =False, reason='', feedback='other', raw=True):
+    if cancel_at_period_end:
+        response = stripe.Subscription.modify(
+            stripe_id,
+            cancel_at_period_end=cancel_at_period_end,
+            cancellation_details={
+                "comment": reason,
+                "feedback": feedback
+            })
+    
+    else:
+        response = stripe.Subscription.cancel(
         stripe_id,
         cancellation_details={
             "comment": reason,
             "feedback": feedback
         })
 
-    return response 
+    if raw:
+        return response    
+
+    return serialize_subscription_data(response) 
 
 
 def get_checkout_customer_plan(session_id):

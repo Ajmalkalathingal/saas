@@ -21,9 +21,10 @@
     <p> original_period_start : {{sub_data.original_period_start }}</p>
     <p> current_period_start : {{sub_data.current_period_start   }}</p>
     <p> current_period_end : {{sub_data.current_period_end }}</p>
+    <p> current_period_end : {{sub_data.cancel_at_period_end }}</p>
     <p> status : {{sub_data.status }}</p>
 </div>
-
+<a href={{sub_data.get_cancel_url}}>cancel</a>
 
     {% endblock content %}
 
