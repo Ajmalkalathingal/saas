@@ -7,8 +7,8 @@ from . import date_utils
 DEBUG = config('DEBUG', cast=bool, default=False)
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', cast=str, default='')
 
-if 'sk_test' not in STRIPE_SECRET_KEY and not DEBUG:
-    raise ValueError('Invalid strip key')
+# if 'sk_test' not in STRIPE_SECRET_KEY and not DEBUG:
+#     raise ValueError('Invalid strip key')
 
 stripe.api_key = STRIPE_SECRET_KEY
 
