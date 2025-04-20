@@ -6,6 +6,7 @@ from django.db.models.signals import post_save
 from django.conf import settings 
 from django.urls import reverse
 from django.utils import timezone
+import datetime
 from django.db.models.signals import post_save
 from django.core.exceptions import ValidationError
 
@@ -18,8 +19,7 @@ SUBSCRIPTION_PERMISSIONS = [
     ("pro", "Pro Perm"),  # subscriptions.pro
     ("basic", "Basic Perm"),  # subscriptions.basic,
     ("basic_ai", "Basic AI Perm")
-]
-
+]    
 
 # Create your models here.
 class Subscription(models.Model):
@@ -156,6 +156,50 @@ class SubscriptionStatus(models.TextChoices):
     CANCELED = 'canceled', 'Canceled'
     UNPAID = 'unpaid', 'Unpaid'
     PAUSED = 'paused', 'Paused'
+
+
+class UserSubscriptionQueryset(models.QuerySet):
+
+    def by_days_left(self,days_left=20):
+        now = timezone.now()
+        in_n_days = now + datetime.timedelta(days=days_left)
+        day_start = in_n_days.replace(hour=0, minute=0, second=0, microsecond=0)
+        day_end = in_n_days.replace(hour=23, minute=59, microsecond=59)
+
+        return self.filter(
+            current_period_end__gte=day_start,
+            current_period_end__lte=day_end
+        )
+    def by_days_ago(self,days_ago=3):
+        now = timezone.now()
+        in_n_days = now - datetime.timedelta(days=days_ago)
+        day_start = in_n_days.replace(hour=0, minute=0, second=0, microsecond=0)
+        day_end = in_n_days.replace(hour=23, minute=59, microsecond=59)
+
+        return self.filter(
+            current_period_end__gte=day_start,
+            current_period_end__lte=day_end
+        ) 
+
+    def by_user_triling(self):
+        active_qs_lookup = Q(status=SubscriptionStatus.ACTIVE) | Q(status=SubscriptionStatus.TRIALING)
+        return self.filter(active_qs_lookup)
+
+    def by_user_ides(self,user_ids=None):
+        qs = self
+        if isinstance(user_ids, list):
+            qs = qs.filter(user__id__in=user_ids)
+        elif isinstance(user_ids, int):
+            qs = qs.filter(user__id=user_ids)
+        elif isinstance(user_ids, str):
+            qs = qs.filter(user__id=user_ids)
+        return qs     
+    
+
+class UserSubscriptionManager(models.Manager):
+    
+    def get_queryset(self):
+        return UserSubscriptionQueryset(self.model, using=self._db)
     
 class UserSubscription(models.Model):
 
@@ -169,6 +213,7 @@ class UserSubscription(models.Model):
     current_period_end = models.DateTimeField(auto_now=False, auto_now_add=False, null=True, blank=True)
     cancel_at_period_end = models.BooleanField(default=False)
     status = models.CharField(max_length=30, choices=SubscriptionStatus.choices , null=True, blank=True)
+    objects = UserSubscriptionManager()
 
 
     @property

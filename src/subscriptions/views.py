@@ -10,9 +10,10 @@ from . import utils
 @login_required
 def user_subscription_view(request):
     user_sub_obj, created = UserSubscription.objects.get_or_create(user = request.user)
+    print(user_sub_obj)
 
     if request.method == "POST":
-        finished_refresh = utils.refresh_user_subscriptions(user_ids=request.user.id)
+        finished_refresh = utils.refresh_user_subscriptions(user_ids=request.user.id, active_only=False)
         if finished_refresh:
             messages.success(request, '..................................refreshed ...............................')
         else :
