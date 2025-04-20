@@ -20,8 +20,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12' 
-      - name: Set DEBUG True for testing
-        run: echo "DEBUG=True" >> $GITHUB_ENV
+      - name: Set DEBUG False for testing
+        run: echo "DEBUG=False" >> $GITHUB_ENV
 
       - name: Setup Django Secret Key
         run: |
